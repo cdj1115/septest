@@ -1,17 +1,32 @@
 <template>
-  <div class="flex h-screen justify-center items-center">
+  <div class="flex h-[100vh]">
     <!-- 左侧广告图片部分 -->
-    <div class="w-1/2">
-      <img
-        src="@/assets/images/appm3V1L6Y3C3podIGShCo686dXRRY4i.png"
-        alt="promotional image"
-        class="h-full object-cover w-[72.5%]"
-      />
+    <div class="w-[40vw] h-full">
+      <el-carousel autoplay loop height="100vh">
+        <el-carousel-item>
+          <img
+            src="@/assets/images/appm3V1L6Y3C3podIGShCo686dXRRY4i.png"
+            alt="promotional image"
+          />
+        </el-carousel-item>
+        <el-carousel-item>
+          <img
+            src="@/assets/images/app9KTBmXHMK2mtI9RHyzPDs-h0NXne1.png"
+            alt="promotional image"
+          />
+        </el-carousel-item>
+        <el-carousel-item>
+          <img
+            src="@/assets/images/appzx4bpYR9rpFdZULrF9EFycs2l-416.png"
+            alt="promotional image"
+          />
+        </el-carousel-item>
+      </el-carousel>
     </div>
 
     <!-- 右侧登录表单部分 -->
 
-    <div class="w-1/2 flex items-center p-5">
+    <div class="w-1/2 h-[100vh] flex items-center p-5">
       <!--  -->
       <el-tabs
         v-model="activeTab"
@@ -51,7 +66,7 @@
                   type="primary"
                   :plain="true"
                   @click="handleLayout"
-                  class="bg-[#0035e3] w-[300px] h-[40px] text-white rounded-[5px]"
+                  class="w-[300px] h-[40px] text-white rounded-[5px]"
                 >
                   登录
                 </el-button>
@@ -96,7 +111,7 @@
                   type="primary"
                   :plain="true"
                   @click="handleLayout"
-                  class="bg-[#0035e3] w-[300px] h-[40px] text-white rounded-[5px]"
+                  class="w-[300px] h-[40px] text-white rounded-[5px]"
                 >
                   登录
                 </el-button>
@@ -124,35 +139,44 @@ import { ElMessage } from "element-plus";
 const router = useRouter();
 const agreed = ref(false);
 const accountLoginForm = ref({
-  
   username: "",
   // account: "",
   password: "",
-  // client_id: "",
-  // client_secret: "",
-  // scope:"",
-  // grant_type: "password",
+  client_id: "3bfad1dd594de870570f0dcf873758c989d379f7bfe04cd188b9246534fd0bca",
+  client_secret:"651abb422279af375cc277fc482435c56a8b4a498132ee24ab8b60ded7aa9554",
+  scope: "",
+  grant_type: "password",
 });
 const activeTab = ref("phone"); // 默认展示手机号登录
 const phoneLoginForm = ref({
   phone: "",
   code: "",
 });
-const handleLayout = async () => {
-getLogin({
+const handleLayout = () => {
+  getLogin({
     username: accountLoginForm.value.username,
     password: accountLoginForm.value.password,
-    // grant_type:accountLoginForm.value.grant_type,
-    // client_id:accountLoginForm.value.client_id,
-    // client_secret:accountLoginForm.value.client_secret,
-    // scope:accountLoginForm.value.scope
-  })
-    .then((res) => {
-      console.log(res);
-    })
-    .catch((err) => {
-      console.log(err);
-    });
+    grant_type: "password",
+    client_id: import.meta.env.VITE_CLIENT_ID,
+    client_secret: import.meta.env.VITE_CLIENT_SECRET,
+    scope: import.meta.env.VITE_CLIENT_SCOPE,
+  });
+  // const [err, res] = await to(
+  //   getAccessToken({
+  //     username: accountLoginForm.value.username,
+  //     password: accountLoginForm.value.password,
+  //     grant_type: "password",
+  //     client_id: import.meta.env.VITE_CLIENT_ID,
+  //     client_secret: import.meta.env.VITE_CLIENT_SECRET,
+  //     scope: accountLoginForm.value.scope,
+  //   })
+  // );
+
+  // if (err) {
+  //   ElMessage.error("登录失败，请检查您的信息");
+  //   return res;
+  // }
+
   if (agreed.value) {
     // 跳转手机登录页面
     router.push("/layout");
@@ -166,7 +190,6 @@ getLogin({
     });
   }
 };
-
 const handleTabClick = (tab) => {
   console.log("当前选中的Tab:", tab.props.label, tab.props.name);
 };

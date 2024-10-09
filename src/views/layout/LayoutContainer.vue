@@ -1,82 +1,146 @@
 <template>
   <div class="flex h-screen">
     <!-- 左侧导航栏 -->
-    <nav
-      class="w-16 h-full bg-gray-500 text-white flex flex-col items-center py-4"
-    >
+    <nav class="w-16 h-screen text-white flex py-4 transform translateY-[-50%]">
       <el-menu
-        class="w-full h-full"
+        class="w-full h-[50vw] mb-[-1rem]"
         :default-active="activeMenu"
         @select="handleSelect"
       >
-        <el-menu-item index="1" class="flex flex-col items-center mb-1">
+        <el-menu-item
+          index="1"
+          class="flex flex-col items-center w-full h-[50px] "
+        >
           <Icon
             icon="icon-park-outline:workbench"
             width="24"
             height="24"
             style="color: black"
+            class="mt-[10px]"
           />
-          <span class="text-xs mt-1">工作台</span>
+          <span class="text-xs ">工作台</span>
         </el-menu-item>
 
-        <el-menu-item index="2" class="flex flex-col items-center mb-1">
+        <el-menu-item index="2" class="flex flex-col items-center">
           <Icon
             icon="eos-icons:project-outlined"
             width="24"
             height="24"
             style="color: black"
+            class="mt-[10px]"
           />
-          <span class="text-xs mt-1">项目</span>
+          <span class="text-xs ">项目</span>
         </el-menu-item>
 
-        <el-menu-item index="3" class="flex flex-col items-center mb-1">
+        <el-menu-item index="3" class="flex flex-col items-center">
           <Icon
             icon="eos-icons:ai"
-            width="32"
-            height="32"
+            width="48"
+            height="48"
             style="color: black"
+            class="mt-[10px]"
           />
-          <span class="text-xs mt-1">AI</span>
+          <span class="text-xs ">AI</span>
         </el-menu-item>
 
-        <el-menu-item index="4" class="flex flex-col items-center mb-1">
+        <el-menu-item index="4" class="flex flex-col items-center">
           <Icon
             icon="ph:code-fill"
             width="24"
             height="24"
             style="color: black"
+            class="mt-[10px]"
           />
-          <span class="text-xs mt-1">代码</span>
+          <span class="text-xs ">代码</span>
         </el-menu-item>
 
-        <el-menu-item index="5" class="flex flex-col items-center mb-1">
+        <el-menu-item index="5" class="flex flex-col items-center">
           <Icon
             icon="fluent-mdl2:product"
             width="24"
             height="24"
             style="color: black"
+            class="mt-[10px]"
           />
-          <span class="text-xs mt-1">制品</span>
+          <span class="text-xs ">制品</span>
         </el-menu-item>
 
-        <el-menu-item index="6" class="flex flex-col items-center mb-1">
-          <Icon icon="mdi:chart-line" width="24" height="24" />
-          <span class="text-xs mt-1">洞察</span>
+        <el-menu-item index="6" class="flex flex-col items-center">
+          <Icon icon="mdi:chart-line" width="24" height="24" class="mt-[10px]"/>
+          <span class="text-xs ">洞察</span>
         </el-menu-item>
 
-        <el-menu-item index="7" class="flex flex-col items-center mb-1">
-          <Icon icon="mdi:book-open" width="24" height="24" />
-          <span class="text-xs mt-1">知识</span>
+        <el-menu-item index="7" class="flex flex-col items-center">
+          <Icon icon="mdi:book-open" width="24" height="24" class="mt-[10px]"/>
+          <span class="text-xs ">知识</span>
         </el-menu-item>
 
-        <el-menu-item index="8" class="flex flex-col items-center mb-1">
+        <el-menu-item index="8" class="flex flex-col items-center">
           <Icon
             icon="fluent-mdl2:automate-flow"
             width="24"
             height="24"
             style="color: black"
+            class="mt-[10px]"
           />
-          <span class="text-xs mt-1">自动化</span>
+          <span class="text-xs ">自动化</span>
+        </el-menu-item>
+        <el-menu-item
+          index="9"
+          class="flex flex-col items-center w-full h-[50px] "
+        >
+          <Icon
+            icon="akar-icons:person"
+            width="24"
+            height="24"
+            style="color: black"
+            class="mt-[10px]"
+          />
+        </el-menu-item>
+        <el-menu-item index="10" class="flex flex-col items-center">
+          <Icon
+            icon="hugeicons:more-02"
+            width="24"
+            height="24"
+            style="color: #666666"
+            class="mt-[10px]"
+          />
+        </el-menu-item>
+        <el-menu-item index="11" class="flex flex-col items-center">
+          <Icon
+            icon="iconamoon:notification"
+            width="24"
+            height="24"
+            class="mt-[10px]"
+            style="color: #666666"
+          />
+        </el-menu-item>
+        <el-menu-item index="12" class="flex flex-col items-center">
+          <Icon
+            icon="ri:settings-line"
+            width="24"
+            height="24"
+            class="mt-[10px]"
+            style="color: #666666"
+          />
+        </el-menu-item>
+        <el-menu-item index="13" class="flex flex-col items-center">
+          <Icon
+            icon="icon-park-outline:thinking-problem"
+            width="24"
+            height="24"
+            class="mt-[10px]"
+            style="color: #666666"
+          />
+        </el-menu-item>
+        <el-menu-item index="14" class="flex flex-col items-center">
+          <Icon
+            icon="bi:person-circle"
+            width="24"
+            height="24"
+            class="mt-[10px]"
+            style="color: #666666"
+          />
         </el-menu-item>
       </el-menu>
     </nav>
@@ -133,6 +197,4 @@ onMounted(() => {
 });
 </script>
 
-<style scoped>
-/* TailwindCSS 提供的工具类已经足够，你可以根据需求调整自定义样式 */
-</style>
+<style scoped></style>
