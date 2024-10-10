@@ -133,26 +133,35 @@
 <script setup>
 import { ref } from "vue";
 import { useRouter } from "vue-router";
+import { to } from "await-to-js";
 import { getLogin } from "../../api/index";
 import "element-plus/es/components/message/style/css";
 import { ElMessage } from "element-plus";
 const router = useRouter();
 const agreed = ref(false);
 const accountLoginForm = ref({
-  username: "",
-  // account: "",
-  password: "",
-  client_id: "3bfad1dd594de870570f0dcf873758c989d379f7bfe04cd188b9246534fd0bca",
-  client_secret:"651abb422279af375cc277fc482435c56a8b4a498132ee24ab8b60ded7aa9554",
-  scope: "",
-  grant_type: "password",
+  username: "3217915440@qq.com",
+  password: "cdj1115",
+  // client_id: import.meta.env.VITE_CLIENT_ID,
+  // client_secret: import.meta.env.VITE_CLIENT_SECRET,
+  // scope: import.meta.env.VITE_CLIENT_SCOPE,
+  // grant_type: "password",
 });
 const activeTab = ref("phone"); // 默认展示手机号登录
 const phoneLoginForm = ref({
   phone: "",
   code: "",
 });
-const handleLayout = () => {
+const handleLayout =  () => {
+  // const getLogin = {
+  //   username: accountLoginForm.value.username,
+  //   password: accountLoginForm.value.password,
+  //   grant_type: "password",
+  //   client_id: import.meta.env.VITE_CLIENT_ID,
+  //   client_secret: import.meta.env.VITE_CLIENT_SECRET,
+  //   scope: import.meta.env.VITE_CLIENT_SCOPE,
+  // };
+  // const [err, res] = await to(getAccessToken(getLogin));
   getLogin({
     username: accountLoginForm.value.username,
     password: accountLoginForm.value.password,
@@ -160,23 +169,13 @@ const handleLayout = () => {
     client_id: import.meta.env.VITE_CLIENT_ID,
     client_secret: import.meta.env.VITE_CLIENT_SECRET,
     scope: import.meta.env.VITE_CLIENT_SCOPE,
-  });
-  // const [err, res] = await to(
-  //   getAccessToken({
-  //     username: accountLoginForm.value.username,
-  //     password: accountLoginForm.value.password,
-  //     grant_type: "password",
-  //     client_id: import.meta.env.VITE_CLIENT_ID,
-  //     client_secret: import.meta.env.VITE_CLIENT_SECRET,
-  //     scope: accountLoginForm.value.scope,
-  //   })
-  // );
-
-  // if (err) {
-  //   ElMessage.error("登录失败，请检查您的信息");
-  //   return res;
-  // }
-
+  })
+    .then((res) => {
+      console.log(res);
+    })
+    .catch((err) => {
+      console.log(err);
+    });
   if (agreed.value) {
     // 跳转手机登录页面
     router.push("/layout");

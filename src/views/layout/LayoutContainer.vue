@@ -1,7 +1,7 @@
 <template>
-  <div class="flex h-screen">
+  <div class="flex h-screen ">
     <!-- 左侧导航栏 -->
-    <nav class="w-16 h-screen text-white flex py-4 transform translateY-[-50%]">
+    <nav class="w-16 h-screen text-white flex ">
       <el-menu
         class="w-full h-[50vw] mb-[-1rem]"
         :default-active="activeMenu"
@@ -133,7 +133,7 @@
             style="color: #666666"
           />
         </el-menu-item>
-        <el-menu-item index="14" class="flex flex-col items-center">
+        <el-menu-item index="14" class="flex flex-col items-center ">
           <Icon
             icon="bi:person-circle"
             width="24"
