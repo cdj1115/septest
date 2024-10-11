@@ -165,9 +165,7 @@
           >
             <div>
               <span class="text-[black]">Hi 于又术!</span>
-              <div
-                class="w-[145px] h-full flex justify-between items-start "
-              >
+              <div class="w-[145px] h-full flex justify-between items-start">
                 <div class="m-[10px]">
                   <Icon
                     icon="proicons:person"
@@ -212,7 +210,11 @@
                 </div>
                 <p class="text-[#2e2e2e] ml-[10px] mt-[10px]">切换语言</p>
                 <div class="h-full">
-                  <p class="text-[#AEAEAE] ml-[10px] mt-[10px] text-[12px] leading-6">简体中文</p>
+                  <p
+                    class="text-[#AEAEAE] ml-[10px] mt-[10px] text-[12px] leading-6"
+                  >
+                    简体中文
+                  </p>
                 </div>
               </div>
               <div class="w-[145px] h-full flex">
@@ -237,7 +239,7 @@
                 </div>
                 <p class="text-[#2e2e2e] ml-[10px] mt-[10px]">更新日志</p>
               </div>
-              <div class="w-[145px] h-full flex">
+              <div @click="outLogin" class="w-[145px] h-full flex cursor-arrow">
                 <div class="m-[10px]">
                   <Icon
                     icon="mingcute:exit-fill"
@@ -246,7 +248,7 @@
                     style="color: black"
                   />
                 </div>
-                <p class="text-[#2e2e2e] ml-[10px] mt-[10px]">退出</p>
+                  <p class="text-[#2e2e2e] ml-[10px] mt-[10px]">退出</p>
               </div>
             </div>
           </el-drawer>
@@ -299,7 +301,10 @@ const handleSelect = (index: any) => {
       break;
   }
 };
-
+const outLogin = () => {
+  localStorage.removeItem("token");
+  router.push("/");
+}
 onMounted(() => {
   // 根据当前路由设置激活的菜单项
   activeMenu.value = router.currentRoute.value.path.split("/")[1] || "1";

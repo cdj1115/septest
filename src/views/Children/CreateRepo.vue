@@ -62,6 +62,20 @@
         </div>
 
         <div class="mb-4">
+          <label for="path" class="block text-sm font-bold text-gray-700"
+            >仓库路径</label
+          >
+          <input
+            type="text"
+            id="path"
+            v-model="form.path"
+            class="mt-1 p-2 block w-full border border-gray-300 rounded-md"
+            placeholder="请输入仓库路径"
+            required
+          />
+        </div>
+
+        <div class="mb-4">
           <label
             for="repoDescription"
             class="block text-sm font-bold text-gray-700"
@@ -173,13 +187,28 @@ const router = useRouter();
 const form = ref({
   project: "",
   name: "",
-  path: "cdj_repo",
+  path: "",
   description: "",
-  access_token: "0fe078827eb62914fd9d36a60f231a03",
+  // access_token: "0fe078827eb62914fd9d36a60f231a03",
 });
-
+const pathRegex = /^[a-zA-Z0-9][a-zA-Z0-9-_\.]{1,190}$/;
 const getOnRepo = async () => {
-  // console.log("提交表单", form.value);
+  if (
+    !form.value.project ||
+    !form.value.name ||
+    !form.value.path ||
+    !form.value.description
+  ) {
+    ElMessage.error("请完善仓库信息");
+    return;
+  }
+  // 对path做校验
+  if (!pathRegex.test(form.value.path)) {
+    ElMessage.error(
+      "仓库路径格式不正确，只允许包含字母、数字或者下划线(_)、中划线(-)、英文句号(.)，必须以字母或数字开头，且长度为2~191个字符"
+    );
+    return;
+  }
   // 提交表单时 发起请求
   // 创建仓库
   try {
@@ -189,11 +218,13 @@ const getOnRepo = async () => {
       description: form.value.description,
       private: true,
       auto_init: true,
-      access_token: form.value.access_token,
+      access_token: import.meta.env.VITE_ACCESS_TOKEN,
       path: form.value.path,
     });
     if (res.status === 201) {
       ElMessage.success("创建仓库成功");
+      // 创建完成后 清空表单信息
+      form.value = {};
       const repoRes = await getRepo();
       if (repoRes.status === 200) {
         router.push({
@@ -203,8 +234,7 @@ const getOnRepo = async () => {
           },
         });
       }
-      // 跳转至仓库详情页
-      router.push("/code");
+      // router.push("/code");
       console.log(res);
     }
   } catch (error) {

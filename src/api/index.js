@@ -12,4 +12,4 @@ export const refreshToken = (data) =>
   );
 
 // 获取仓库
-export const getRepo = () => request.get("/api/v5/users/{username}/repos");
+export const getRepo = () => request.get("/api/v5/users/{name}/repos");
