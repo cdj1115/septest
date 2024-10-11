@@ -147,69 +147,65 @@ const accountLoginForm = ref({
   // scope: import.meta.env.VITE_CLIENT_SCOPE,
   // grant_type: "password",
 });
-const activeTab = ref("phone"); // 默认展示手机号登录
+const activeTab = ref("account"); // 默认展示邮箱登录
 const phoneLoginForm = ref({
   phone: "",
   code: "",
 });
-const handleLayout =  () => {
-  // const getLogin = {
-  //   username: accountLoginForm.value.username,
-  //   password: accountLoginForm.value.password,
-  //   grant_type: "password",
-  //   client_id: import.meta.env.VITE_CLIENT_ID,
-  //   client_secret: import.meta.env.VITE_CLIENT_SECRET,
-  //   scope: import.meta.env.VITE_CLIENT_SCOPE,
-  // };
-  // const [err, res] = await to(getAccessToken(getLogin));
-  getLogin({
-    username: accountLoginForm.value.username,
-    password: accountLoginForm.value.password,
-    grant_type: "password",
-    client_id: import.meta.env.VITE_CLIENT_ID,
-    client_secret: import.meta.env.VITE_CLIENT_SECRET,
-    scope: import.meta.env.VITE_CLIENT_SCOPE,
-  })
-    .then((res) => {
-      console.log(res);
-    })
-    .catch((err) => {
-      console.log(err);
-    });
-  if (agreed.value) {
-    // 跳转手机登录页面
-    router.push("/layout");
-    ElMessage.success("登录成功");
-  } else {
-    // 提示用户未同意协议
+const handleLayout = async () => {
+  // 检查用户是否同意协议
+  if (!agreed.value) {
     ElMessage({
       message: "请先同意协议",
       type: "warning",
       plain: true,
     });
+    return;
+  }
+
+  // 前端校验：检查账号和密码是否为空
+  if (!accountLoginForm.value.username || !accountLoginForm.value.password) {
+    ElMessage.error("账号和密码不能为空");
+    return;
+  }
+
+  // 校验邮箱格式
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailRegex.test(accountLoginForm.value.username)) {
+    ElMessage.error("请输入有效的邮箱地址");
+    return;
+  }
+
+  // 开始登录请求
+  try {
+    const res = await getLogin({
+      username: accountLoginForm.value.username,
+      password: accountLoginForm.value.password,
+      grant_type: "password",
+      client_id: import.meta.env.VITE_CLIENT_ID,
+      client_secret: import.meta.env.VITE_CLIENT_SECRET,
+      scope: import.meta.env.VITE_CLIENT_SCOPE,
+    });
+
+    // 校验响应
+    if (res.data.access_token) {
+      localStorage.setItem("token", res.data.access_token);
+      router.push("/layout");
+      ElMessage.success("登录成功");
+    } else {
+      ElMessage.error("账号或密码错误");
+    }
+  } catch (err) {
+    // 捕获请求失败的异常
+    console.error("登录请求失败", err);
+    ElMessage.error("登录请求失败，请重试");
   }
 };
+
 const handleTabClick = (tab) => {
   console.log("当前选中的Tab:", tab.props.label, tab.props.name);
 };
 
-// const submitLogin = (type) => {
-//   if (type === "phone") {
-//     console.log(
-//       "手机号:",
-//       phoneLoginForm.value.phone,
-//       "验证码:",
-//       phoneLoginForm.value.code
-//     );
-//   } else if (type === "account") {
-//     console.log(
-//       "账号:",
-//       accountLoginForm.value.account,
-//       "密码:",
-//       accountLoginForm.value.password
-//     );
-//   }
-// };
 </script>
 
 <style scoped></style>

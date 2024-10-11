@@ -8,6 +8,7 @@ import ArtIfact from "../views/Children/ArtIfact.vue";
 import InSight from "../views/Children/InSight.vue";
 import KnowLedge from "../views/Children/KnowLedge.vue";
 import AutoMation from "../views/Children/AutoMation.vue";
+import CreateRepo from "../views/Children/CreateRepo.vue";
 
 export default [
   {
@@ -49,6 +50,10 @@ export default [
       {
         path: "/automation",
         component: AutoMation,
+      },
+      {
+        path: "/createrepo",
+        component: CreateRepo,
       },
     ],
   },
