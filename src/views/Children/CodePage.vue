@@ -154,10 +154,6 @@
         </el-tab-pane>
       </div>
     </el-tabs>
-     <div>
-      <input type="text" v-model="repoInfo.username" placeholder="搜索代码仓库" class="w-[300px] h-[40px] rounded-md border-[#ccc] border-2">
-      <button @click="goRepo">搜索</button>
-     </div>
   </div>
 </template>
 <script lang="ts" setup>
@@ -195,14 +191,16 @@ const formattedUpdatedDate = computed(() => {
   const updatedTime = new Date(updatedDate.value); // 将字符串转换为 Date 对象
   const now = new Date(); // 当前时间
   const diffInMinutes = Math.floor((now.getTime() - updatedTime.getTime()) / (1000 * 60)); // 计算时间差，转换为分钟
- // 计算时间差，转换为分钟
 
   if (diffInMinutes < 1) {
     return "刚刚"; // 小于1分钟
   } else if (diffInMinutes === 1) {
     return "1分钟前"; // 1分钟
+  } else if (diffInMinutes > 60) {
+    const hoursAgo = Math.floor(diffInMinutes / 60);
+    return `${hoursAgo}小时前`; // 超过60分钟
   } else {
-    return `${diffInMinutes}分钟前`; // 2分钟及以上
+    return `${diffInMinutes}分钟前`; // 2到60分钟
   }
 });
 // 根据我的图片 在用户点击完成创建时 发起创建仓库的API请求 请求成功后 跳转到code页面 并且将刚刚请求到的数据
@@ -223,17 +221,8 @@ const handleClick = (tab: TabsPaneContext, event: Event) => {
 const onRepo = () => {
    router.push("/createrepo")
 }
-const repoInfo = ref({
-  username:''
-})
-const goRepo = () => {
-  getRepo().then((res) => {
-    console.log(res);
-  }).catch((err) => {
-    console.log(err);
-    
-  })
-}
+
+
 
 </script>
 <style scoped>
