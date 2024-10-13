@@ -248,7 +248,7 @@
                     style="color: black"
                   />
                 </div>
-                  <p class="text-[#2e2e2e] ml-[10px] mt-[10px]">退出</p>
+                <p class="text-[#2e2e2e] ml-[10px] mt-[10px]">退出</p>
               </div>
             </div>
           </el-drawer>
@@ -267,7 +267,6 @@
 import { ref, onMounted } from "vue";
 import { useRouter } from "vue-router";
 import { Icon } from "@iconify/vue";
-
 const router = useRouter();
 const activeMenu = ref("1");
 const drawer = ref();
@@ -304,10 +303,11 @@ const handleSelect = (index: any) => {
 const outLogin = () => {
   localStorage.removeItem("token");
   router.push("/");
-}
-onMounted(() => {
+};
+onMounted(async() => {
   // 根据当前路由设置激活的菜单项
   activeMenu.value = router.currentRoute.value.path.split("/")[1] || "1";
+  
 });
 </script>
 

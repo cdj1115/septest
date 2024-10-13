@@ -4,6 +4,9 @@
       <h1 class="text-[18px] font-bold text-[#333]">代码仓库</h1>
     </div>
     <hr class="mt-[10px]" />
+    <div v-if="loading" class="text-center text-blue-500 font-bold">
+       创建中，请稍候...
+    </div>
     <div class="flex items-center mb-4 w-[200px] h-[100%] mt-[2%] ml-[10px]">
       <div
         class="w-[30px] h-[30px] rounded-full shadow-md flex items-center justify-center cursor-arrow"
@@ -13,6 +16,7 @@
           width="30"
           height="30"
           style="color: skyblue"
+          @click="cancelForm"
         />
       </div>
       <h2 class="text-xl font-bold ml-[30px]">创建代码仓库</h2>
@@ -27,7 +31,6 @@
           </label>
           <input
             type="text"
-            id="form.project"
             v-model="form.project"
             class="mt-1 p-2 block w-full border border-gray-300 rounded-md"
             placeholder="所属项目"
@@ -97,7 +100,7 @@
             <label class="inline-flex items-center">
               <input
                 type="checkbox"
-                v-model="form.auto_init"
+                v-model="form.readme"
                 class="form-checkbox"
               />
               <span class="ml-2 text-[14px]">生成README文件</span>
@@ -106,7 +109,7 @@
             <label class="inline-flex items-center">
               <input
                 type="checkbox"
-                v-model="form.auto_init"
+                v-model="form.gitignore"
                 class="form-radio"
               />
               <span class="ml-2 text-[14px]">添加.gitignore文件</span>
@@ -115,7 +118,7 @@
             <label class="inline-flex items-center">
               <input
                 type="checkbox"
-                v-model="form.auto_init"
+                v-model="form.branchModel"
                 class="form-radio"
               />
               <span class="ml-2 text-[14px]"
@@ -157,8 +160,9 @@
             @click="getOnRepo"
             type="submit"
             class="w-150px bg-[#2B323D] text-white py-2 px-4 rounded-md"
-          >
-            创建仓库
+          >创建仓库
+            <!-- <span v-if="loading">创建中...</span>
+            <span v-else>创建仓库</span> -->
           </button>
           <!-- 取消按钮 -->
           <button
@@ -180,11 +184,13 @@ import { Icon } from "@iconify/vue/dist/iconify.js";
 import "element-plus/es/components/message/style/css";
 import { ElMessage } from "element-plus";
 import { useRouter } from "vue-router";
-import { createRepo, getRepo } from "../../api";
+import { createRepo } from "../../api";
 const router = useRouter();
-// const repoDescription = ref('')
-// const isPublic = ref(false)
+const loading = ref(false);
 const form = ref({
+  readme:false,
+  gitignore:false,
+  branchModel:false,
   project: "",
   name: "",
   path: "",
@@ -209,9 +215,12 @@ const getOnRepo = async () => {
     );
     return;
   }
+   // 显示“创建中”提示
+  loading.value = true;
   // 提交表单时 发起请求
   // 创建仓库
   try {
+    loading.value = true;
     const res = await createRepo({
       project: form.value.project,
       name: form.value.name,
@@ -221,25 +230,31 @@ const getOnRepo = async () => {
       access_token: import.meta.env.VITE_ACCESS_TOKEN,
       path: form.value.path,
     });
+    // 于又术:
+// 思路一:跳转的时候携带参数 另一个页面接受参数 然后渲染到页面上
+// 思路二:跳转到另一个页面在onmouted里再调用geRepo（）先写死 后面在想办法 然后再把返回的数据再次渲染到页面
+
     if (res.status === 201) {
       ElMessage.success("创建仓库成功");
+      console.log(res.data.project, res.data.name, res.data.description,res.data.updated_at);
+      console.log(res)
       // 创建完成后 清空表单信息
-      form.value = {};
-      const repoRes = await getRepo();
-      if (repoRes.status === 200) {
-        router.push({
-          path: "/code",
-          query: {
-            repoData: JSON.stringify(repoRes.data),
-          },
-        });
-      }
-      // router.push("/code");
-      console.log(res);
+      form.value = {...form};
+       localStorage.setItem('repoData', JSON.stringify(res.data));
+      router.push({
+        path: "/code",
+        query: {
+          // project: res.data.project,
+          name: res.data.name,
+          description: res.data.description,
+          data: res.data.updated_at,
+        },
+      });
     }
   } catch (error) {
     console.error("创建仓库失败", error);
-    ElMessage.error("创建仓库失败，请重试");
+  } finally {
+    loading.value = false;
   }
 };
 

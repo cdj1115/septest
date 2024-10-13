@@ -17,8 +17,101 @@
             <p class="w-[216px] text-center text-[#999]">暂无数据</p>
           </div>
         </el-tab-pane>
-        <el-tab-pane label="全部仓库" name="second">
-          <div class="tab-content">
+        <el-tab-pane label="全部仓库" @click="getOnRepo" name="second">
+          <div v-if="tableData.length > 0">
+            <div class="mb-[20px]">
+              <el-dropdown>
+                <span class="el-dropdown-link">
+                    所属项目
+                  <el-icon class="el-icon--right">
+                    <arrow-down />
+                  </el-icon>
+                </span>
+                <template #dropdown>
+                  <el-dropdown-menu>
+                    <el-dropdown-item>项目一</el-dropdown-item>
+                    <el-dropdown-item>项目二</el-dropdown-item>
+                  </el-dropdown-menu>
+                </template>
+              </el-dropdown>
+              <el-dropdown class="ml-[40px]">
+                <span class="el-dropdown-link">
+                    公开性
+                  <el-icon class="el-icon--right">
+                    <arrow-down />
+                  </el-icon>
+                </span>
+                <template #dropdown>
+                  <el-dropdown-menu>
+                    <el-dropdown-item>私有</el-dropdown-item>
+                    <el-dropdown-item>公开</el-dropdown-item>
+                  </el-dropdown-menu>
+                </template>
+              </el-dropdown>
+              <el-dropdown class="ml-[40px]">
+                <span class="el-dropdown-link">
+                    归档状态
+                  <el-icon class="el-icon--right">
+                    <arrow-down />
+                  </el-icon>
+                </span>
+                <template #dropdown>
+                  <el-dropdown-menu>
+                    <el-dropdown-item>未归档</el-dropdown-item>
+                    <el-dropdown-item>已归档</el-dropdown-item>
+                  </el-dropdown-menu>
+                </template>
+              </el-dropdown>
+                <el-input
+                  v-model="input2"
+                  style="width: 200px"
+                  placeholder="搜索"
+                  :prefix-icon="Search"
+                  class="ml-[30px]"
+                />
+            </div>
+            <div>
+              <el-table :data="tableData" style="width: 100%; text-align: center;">
+                <!-- 仓库名称列 -->
+                <el-table-column prop="repoName" label="仓库名称">
+                  {{ repoName }}
+                  <!-- <template #default="scope">
+                    <el-avatar icon="el-icon-user" />
+                    <span style="margin-left: 10px">{{ scope.row.repoName }}</span>
+                    <div>{{ scope.row.repoDescription }}</div>
+                  </template> -->
+                </el-table-column>
+                <el-table-column prop="repoDescription" label="仓库描述">{{ repoDescription }}</el-table-column>
+                <!-- 所属项目列 -->
+                <el-table-column prop="project" label="所属项目"></el-table-column>
+
+                <!-- 合并请求列 -->
+                <el-table-column prop="merges" label="合并请求"></el-table-column>
+
+                <!-- 更新时间列 -->
+                <el-table-column  label="更新时间">{{ formattedUpdatedDate }}</el-table-column>
+
+                <!-- 操作列 -->
+                <el-table-column label="操作" width="100">
+                  <template #default="scope">
+                    <el-button type="primary" @click="handleEdit(scope.row)">编辑</el-button>
+                  </template>
+                </el-table-column>
+              </el-table>
+            </div>
+            <!-- 分页 -->
+            <div class="mt-[10px]">
+              <el-pagination
+              background
+              layout="prev, pager, next"
+              :total="total"
+              :page-size="pageSize"
+              @current-change="handlePageChange"
+            />
+            </div>
+          </div>
+          <!-- 仓库原始状态 -->
+          <div v-else class="tab-content">
             <p class="text-center text-[#333] text-lg font-bold mt-8">
               欢迎使用代码仓库
             </p>
@@ -61,38 +154,93 @@
         </el-tab-pane>
       </div>
     </el-tabs>
-     
+     <div>
+      <input type="text" v-model="repoInfo.username" placeholder="搜索代码仓库" class="w-[300px] h-[40px] rounded-md border-[#ccc] border-2">
+      <button @click="goRepo">搜索</button>
+     </div>
   </div>
 </template>
 <script lang="ts" setup>
-import { ref } from "vue";
+import { ref,onMounted,computed } from "vue";
 import { ElMessage } from "element-plus";
+import { ArrowDown } from '@element-plus/icons-vue'
+import { Search } from '@element-plus/icons-vue'
 import type { TabsPaneContext } from "element-plus";
+import { getRepo } from "../../api";
 import { useRouter } from "vue-router";
-import {getRepo} from "../../api/index";
 const router = useRouter();
 const activeName = ref("first");
+const input2 = ref('')
+const repoName = ref("");
+const repoDescription = ref("");
+const updatedDate = ref("");
+const tableData = ref([
+  { name: 'abc', description: 'hello', project: '123', merges: 0, updateTime: '2分钟前' }
+])
+onMounted(() => {
+  const storedData = localStorage.getItem('repoData');
+  if (storedData) {
+    const data = JSON.parse(storedData);
+    repoName.value = data.name || "无";
+    repoDescription.value = data.description || "无";
+    updatedDate.value = data.updated_at || "无";
+  }
+});
+// 计算并格式化更新时间
+const formattedUpdatedDate = computed(() => {
+  if (!updatedDate.value || updatedDate.value === "无") {
+    return "无";
+  }
+
+  const updatedTime = new Date(updatedDate.value); // 将字符串转换为 Date 对象
+  const now = new Date(); // 当前时间
+  const diffInMinutes = Math.floor((now.getTime() - updatedTime.getTime()) / (1000 * 60)); // 计算时间差，转换为分钟
+ // 计算时间差，转换为分钟
+
+  if (diffInMinutes < 1) {
+    return "刚刚"; // 小于1分钟
+  } else if (diffInMinutes === 1) {
+    return "1分钟前"; // 1分钟
+  } else {
+    return `${diffInMinutes}分钟前`; // 2分钟及以上
+  }
+});
+// 根据我的图片 在用户点击完成创建时 发起创建仓库的API请求 请求成功后 跳转到code页面 并且将刚刚请求到的数据
+const total = ref(1)
+const pageSize = ref(10)
+
+
+const handlePageChange = (page) => {
+  console.log('当前页码：', page)
+}
+
+const handleEdit = (row) => {
+  console.log('编辑行：', row)
+}
 const handleClick = (tab: TabsPaneContext, event: Event) => {
   console.log(tab, event);
 };
-
-
-const repoInfo = ref({
-  name: "test",
-  access_token: "0fe078827eb62914fd9d36a60f231a03",
-});
 const onRepo = () => {
    router.push("/createrepo")
-  // getRepo({
-  //  name:repoInfo.value.name,
-  //  access_token:repoInfo.value.access_token
-  // }).then((res) => {
-  //   console.log(res);
-  //   ElMessage.success("获取仓库成功");
-  // }).catch((err) => {
-  //   console.log(err);
-    
-  // })
 }
+const repoInfo = ref({
+  username:''
+})
+const goRepo = () => {
+  getRepo().then((res) => {
+    console.log(res);
+  }).catch((err) => {
+    console.log(err);
+    
+  })
+}
+
 </script>
-<style scoped></style>
+<style scoped>
+.example-showcase .el-dropdown-link {
+  cursor: pointer;
+  color: var(--el-color-primary);
+  display: flex;
+  align-items: center;
+}
+</style>

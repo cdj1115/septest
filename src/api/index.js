@@ -12,4 +12,5 @@ export const refreshToken = (data) =>
   );
 
 // 获取仓库
-export const getRepo = () => request.get("/api/v5/users/{name}/repos");
+export const getRepo = () => request.get("/api/v5/users/yu-youshu/repos");
+console.log(getRepo);
