@@ -21,12 +21,14 @@
           <div v-if="tableData.length > 0">
             <div class="mb-[20px]">
               <el-dropdown>
-                <span class="el-dropdown-link">
+                <div class="bg-[#F6F7FA] w-[100px] h-[30px] leading-[30px] text-center rounded-md">
+                  <span class="el-dropdown-link">
                     所属项目
                   <el-icon class="el-icon--right">
                     <arrow-down />
                   </el-icon>
                 </span>
+                </div>
                 <template #dropdown>
                   <el-dropdown-menu>
                     <el-dropdown-item>项目一</el-dropdown-item>
@@ -34,13 +36,15 @@
                   </el-dropdown-menu>
                 </template>
               </el-dropdown>
-              <el-dropdown class="ml-[40px]">
-                <span class="el-dropdown-link">
+              <el-dropdown class="ml-[10px]">
+                <div class="bg-[#F6F7FA] w-[100px] h-[30px] leading-[30px] text-center rounded-md">
+                  <span class="el-dropdown-link">
                     公开性
                   <el-icon class="el-icon--right">
                     <arrow-down />
                   </el-icon>
                 </span>
+                </div>
                 <template #dropdown>
                   <el-dropdown-menu>
                     <el-dropdown-item>私有</el-dropdown-item>
@@ -48,13 +52,15 @@
                   </el-dropdown-menu>
                 </template>
               </el-dropdown>
-              <el-dropdown class="ml-[40px]">
-                <span class="el-dropdown-link">
+              <el-dropdown class="ml-[10px]">
+                <div class="bg-[#F6F7FA] w-[100px] h-[30px] leading-[30px] text-center rounded-md">
+                  <span class="el-dropdown-link">
                     归档状态
                   <el-icon class="el-icon--right">
                     <arrow-down />
                   </el-icon>
                 </span>
+                </div>
                 <template #dropdown>
                   <el-dropdown-menu>
                     <el-dropdown-item>未归档</el-dropdown-item>
@@ -67,26 +73,37 @@
                   style="width: 200px"
                   placeholder="搜索"
                   :prefix-icon="Search"
-                  class="ml-[30px]"
+                  class="ml-[10px]"
                 />
             </div>
-            <div>
-              <el-table :data="tableData" style="width: 100%; text-align: center;">
+            <div class="mt-[30px]">
+              <el-table :data="tableData" style="width: 100%; ">
                 <!-- 仓库名称列 -->
-                <el-table-column prop="repoName" label="仓库名称">
-                  {{ repoName }}
-                  <!-- <template #default="scope">
-                    <el-avatar icon="el-icon-user" />
-                    <span style="margin-left: 10px">{{ scope.row.repoName }}</span>
-                    <div>{{ scope.row.repoDescription }}</div>
-                  </template> -->
+                <el-table-column label="仓库名称">
+                  <template #default="scope">
+                    <div class=" w-[105px] flex justify-between items-center">
+                      <div><el-avatar icon="el-icon-user" /></div>
+                      <div>
+                        <span style="margin-left: 10px">{{ scope.row.name }}</span>
+                        <div>{{ scope.row.description  }}</div>
+                      </div>
+                    </div>
+                  </template>
                 </el-table-column>
-                <el-table-column prop="repoDescription" label="仓库描述">{{ repoDescription }}</el-table-column>
                 <!-- 所属项目列 -->
                 <el-table-column prop="project" label="所属项目"></el-table-column>
 
                 <!-- 合并请求列 -->
-                <el-table-column prop="merges" label="合并请求"></el-table-column>
+                 <el-table-column prop="merges" label="合并请求">
+                  <template #default="scope">
+                    <div style="display: flex; align-items: center;">
+                      <Icon icon="pajamas:merge-request-open" width="20" height="20"  style="color: darkgray" />
+                      <span class="ml-[10px]">{{ scope.row.merges }}</span>
+                    </div>
+                  </template>
+                </el-table-column>
+
+                <!-- <el-table-column prop="merges" label="合并请求"></el-table-column> -->
 
                 <!-- 更新时间列 -->
                 <el-table-column  label="更新时间">{{ formattedUpdatedDate }}</el-table-column>
@@ -94,7 +111,16 @@
                 <!-- 操作列 -->
                 <el-table-column label="操作" width="100">
                   <template #default="scope">
-                    <el-button type="primary" @click="handleEdit(scope.row)">编辑</el-button>
+                    <div class=" w-[70px] flex justify-between items-center">
+                      <!-- 删除图标 -->
+                      <div @click="handleDelete(scope.row)" class="w-[28px] h-[28px] rounded-full">
+                          <Icon icon="material-symbols:delete" width="24" height="24" style="color: red" />
+                      </div>
+                      <!-- 编辑图标 -->
+                      <!-- <div class="w-[28px] h-[28px] rounded-full border-2]">
+                        <Icon  @click="handleEdit(scope.row)" icon="ic:outline-edit" width="24" height="24"  style="color: skyblue" />
+                      </div> -->
+                    </div>
                   </template>
                 </el-table-column>
               </el-table>
@@ -154,15 +180,27 @@
         </el-tab-pane>
       </div>
     </el-tabs>
+    <!-- 编辑弹出层 -->
+    <el-dialog v-model="isEditDialogVisible" title="编辑仓库">
+      <div>
+        <!-- 表单内容，可根据需求添加 -->
+        <el-input v-model="editForm.name" placeholder="请输入仓库名称" />
+      </div>
+      <template #footer>
+        <el-button @click="isEditDialogVisible = false">取消</el-button>
+        <el-button type="primary" @click="confirmEdit">保存</el-button>
+      </template>
+    </el-dialog>
   </div>
 </template>
 <script lang="ts" setup>
-import { ref,onMounted,computed } from "vue";
-import { ElMessage } from "element-plus";
+import { ref,reactive,onMounted,computed } from "vue";
+import { ElMessage, ElMessageBox,ElNotification   } from "element-plus";
+import { Icon } from "@iconify/vue/dist/iconify.js";
 import { ArrowDown } from '@element-plus/icons-vue'
 import { Search } from '@element-plus/icons-vue'
 import type { TabsPaneContext } from "element-plus";
-import { getRepo } from "../../api";
+// import { getRepo } from "../../api";
 import { useRouter } from "vue-router";
 const router = useRouter();
 const activeName = ref("first");
@@ -170,9 +208,17 @@ const input2 = ref('')
 const repoName = ref("");
 const repoDescription = ref("");
 const updatedDate = ref("");
+// 控制编辑弹出层显示状态
+const isEditDialogVisible = ref(false);// 编辑表单数据
+// 编辑表单的响应式数据
+const editForm = reactive({
+  name: '',
+  description: ''
+});
 const tableData = ref([
   { name: 'abc', description: 'hello', project: '123', merges: 0, updateTime: '2分钟前' }
 ])
+
 onMounted(() => {
   const storedData = localStorage.getItem('repoData');
   if (storedData) {
@@ -181,6 +227,16 @@ onMounted(() => {
     repoDescription.value = data.description || "无";
     updatedDate.value = data.updated_at || "无";
   }
+  // 更新表格中的数据
+    tableData.value = [
+      {
+        name: repoName.value,
+        description: repoDescription.value,
+        project: '未知项目',
+        merges: 0,
+        updateTime: updatedDate.value,
+      }
+    ];
 });
 // 计算并格式化更新时间
 const formattedUpdatedDate = computed(() => {
@@ -206,8 +262,6 @@ const formattedUpdatedDate = computed(() => {
 // 根据我的图片 在用户点击完成创建时 发起创建仓库的API请求 请求成功后 跳转到code页面 并且将刚刚请求到的数据
 const total = ref(1)
 const pageSize = ref(10)
-
-
 const handlePageChange = (page) => {
   console.log('当前页码：', page)
 }
@@ -215,6 +269,7 @@ const handlePageChange = (page) => {
 const handleEdit = (row) => {
   console.log('编辑行：', row)
 }
+
 const handleClick = (tab: TabsPaneContext, event: Event) => {
   console.log(tab, event);
 };
