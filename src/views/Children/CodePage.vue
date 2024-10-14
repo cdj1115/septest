@@ -8,7 +8,6 @@
       <div class="ml-[90%] bg-[#2B323D] text-[#fff] text-center rounded-md">
         <button plain class="h-[35px]" @click="onRepo">创建代码仓库</button>
       </div>
-        <!-- <button plain class="bg-[#2B323D] h-[35px] text-white" @click="getOnRepo">获取仓库</button> -->
 
       <div class="mt-[5%]">
         <el-tab-pane label="最近访问" name="first">
@@ -81,8 +80,8 @@
                 <!-- 仓库名称列 -->
                 <el-table-column label="仓库名称">
                   <template #default="scope">
-                    <div class=" w-[105px] flex justify-between items-center">
-                      <div><el-avatar icon="el-icon-user" /></div>
+                    <div class="w-[35%] flex justify-between items-center">
+                      <div><el-avatar>{{ scope.row.avatar }}</el-avatar></div>
                       <div>
                         <span style="margin-left: 10px">{{ scope.row.name }}</span>
                         <div>{{ scope.row.description  }}</div>
@@ -91,7 +90,7 @@
                   </template>
                 </el-table-column>
                 <!-- 所属项目列 -->
-                <el-table-column prop="project" label="所属项目"></el-table-column>
+                <el-table-column label="所属项目">{{ project }}</el-table-column>
 
                 <!-- 合并请求列 -->
                  <el-table-column prop="merges" label="合并请求">
@@ -113,13 +112,10 @@
                   <template #default="scope">
                     <div class=" w-[70px] flex justify-between items-center">
                       <!-- 删除图标 -->
-                      <div @click="handleDelete(scope.row)" class="w-[28px] h-[28px] rounded-full">
+                      <div @click="handleDelete(scope.row)" class="w-[28px] h-[28px] rounded-full cursor-arrow">
                           <Icon icon="material-symbols:delete" width="24" height="24" style="color: red" />
                       </div>
-                      <!-- 编辑图标 -->
-                      <!-- <div class="w-[28px] h-[28px] rounded-full border-2]">
-                        <Icon  @click="handleEdit(scope.row)" icon="ic:outline-edit" width="24" height="24"  style="color: skyblue" />
-                      </div> -->
+                      
                     </div>
                   </template>
                 </el-table-column>
@@ -180,59 +176,60 @@
         </el-tab-pane>
       </div>
     </el-tabs>
-    <!-- 编辑弹出层 -->
-    <el-dialog v-model="isEditDialogVisible" title="编辑仓库">
-      <div>
-        <!-- 表单内容，可根据需求添加 -->
-        <el-input v-model="editForm.name" placeholder="请输入仓库名称" />
-      </div>
-      <template #footer>
-        <el-button @click="isEditDialogVisible = false">取消</el-button>
-        <el-button type="primary" @click="confirmEdit">保存</el-button>
-      </template>
-    </el-dialog>
   </div>
 </template>
 <script lang="ts" setup>
-import { ref,reactive,onMounted,computed } from "vue";
+import { ref,onMounted,computed } from "vue";
 import { ElMessage, ElMessageBox,ElNotification   } from "element-plus";
 import { Icon } from "@iconify/vue/dist/iconify.js";
 import { ArrowDown } from '@element-plus/icons-vue'
 import { Search } from '@element-plus/icons-vue'
 import type { TabsPaneContext } from "element-plus";
-// import { getRepo } from "../../api";
+import { deleteRepo,createRepo } from "../../api/index"
 import { useRouter } from "vue-router";
 const router = useRouter();
 const activeName = ref("first");
 const input2 = ref('')
+const repoData = ref({
+  owner:"yu-youshu",
+  repo:"my_name",
+  access_token:"b2bf89b4f6897c98114173d56b6a1004"
+});
+// const avatar = ref("")
+const forks = ref("")
+const project = ref("");
 const repoName = ref("");
 const repoDescription = ref("");
 const updatedDate = ref("");
-// 控制编辑弹出层显示状态
-const isEditDialogVisible = ref(false);// 编辑表单数据
-// 编辑表单的响应式数据
-const editForm = reactive({
-  name: '',
-  description: ''
-});
 const tableData = ref([
-  { name: 'abc', description: 'hello', project: '123', merges: 0, updateTime: '2分钟前' }
+  { name: 'repoName.value', description: 'repoDescription.value', project: 'data.project', merges: 0, updateTime: 'updatedDate.value' }
 ])
 
 onMounted(() => {
   const storedData = localStorage.getItem('repoData');
+//   type tableData = {
+//   name: string;
+//   description: string;
+//   project: string;
+//   merges: number;
+//   updateTime: string;
+//   forks?: string; // 加入 `forks` 属性
+// };
   if (storedData) {
     const data = JSON.parse(storedData);
     repoName.value = data.name || "无";
     repoDescription.value = data.description || "无";
     updatedDate.value = data.updated_at || "无";
+    project.value = data.project || "无";
+    forks.value = data.forks_count || "无";
+    // avatar.value = data.avatar_url || "无";
   }
   // 更新表格中的数据
     tableData.value = [
       {
         name: repoName.value,
         description: repoDescription.value,
-        project: '未知项目',
+        project: project.value,
         merges: 0,
         updateTime: updatedDate.value,
       }
@@ -259,7 +256,6 @@ const formattedUpdatedDate = computed(() => {
     return `${diffInMinutes}分钟前`; // 2到60分钟
   }
 });
-// 根据我的图片 在用户点击完成创建时 发起创建仓库的API请求 请求成功后 跳转到code页面 并且将刚刚请求到的数据
 const total = ref(1)
 const pageSize = ref(10)
 const handlePageChange = (page) => {
@@ -269,7 +265,38 @@ const handlePageChange = (page) => {
 const handleEdit = (row) => {
   console.log('编辑行：', row)
 }
+// 点击删除图标时 连gitee上对应的仓库也一并删除了
 
+const handleDelete = async (row) => {
+  const owner = repoData.value.owner;
+  const repo = repoData.value.repo;
+  const token = repoData.value.access_token;
+
+  // 打印检查参数
+  console.log('Owner:', owner);
+  console.log('Repo:', repo);
+  console.log('Access Token:', token);
+  console.log(`Request URL: https://gitee.com/api/v5/repos/${owner}/${repo}`);
+
+  try {
+    const res = await deleteRepo(owner, repo, token);
+
+    if (res.status === 204) {
+      ElMessage.success('仓库删除成功');
+      // 删除表格中的行
+      const index = tableData.value.indexOf(row);
+      if (index !== -1) {
+        tableData.value.splice(index, 1);
+        ElMessage.success('行删除成功');
+      }
+    } else {
+      ElMessage.error('删除仓库失败，请检查权限或仓库是否存在');
+    }
+  } catch (err) {
+    console.error(err);
+    ElMessage.error('删除仓库时发生错误');
+  }
+};
 const handleClick = (tab: TabsPaneContext, event: Event) => {
   console.log(tab, event);
 };

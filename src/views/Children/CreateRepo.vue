@@ -4,7 +4,7 @@
       <h1 class="text-[18px] font-bold text-[#333]">代码仓库</h1>
     </div>
     <hr class="mt-[10px]" />
-    <div v-if="loading" class="text-center text-blue-500 font-bold">
+    <div v-if="loading" class="text-center text-blue-300 font-bold">
        创建中，请稍候...
     </div>
     <div class="flex items-center mb-4 w-[200px] h-[100%] mt-[2%] ml-[10px]">
@@ -188,9 +188,9 @@ import { createRepo } from "../../api";
 const router = useRouter();
 const loading = ref(false);
 const form = ref({
-  readme:false,
-  gitignore:false,
-  branchModel:false,
+  readme:true,
+  gitignore:true,
+  branchModel:true,
   project: "",
   name: "",
   path: "",
@@ -221,30 +221,43 @@ const getOnRepo = async () => {
   // 创建仓库
   try {
     loading.value = true;
+    // 获取 token 并存储到 localStorage 中
+    const token = import.meta.env.VITE_ACCESS_TOKEN;
+    if (token) {
+      localStorage.setItem("access_token", token); // 将 token 存储到 localStorage
+    }
     const res = await createRepo({
+      readme: form.value.readme,
+      branchModel: form.value.branchModel,
+      gitignore: form.value.gitignore,
       project: form.value.project,
       name: form.value.name,
       description: form.value.description,
       private: true,
       auto_init: true,
-      access_token: import.meta.env.VITE_ACCESS_TOKEN,
+      // access_token: import.meta.env.VITE_ACCESS_TOKEN,
+      access_token:localStorage.getItem("access_token"),
       path: form.value.path,
     });
-    // 于又术:
 // 思路一:跳转的时候携带参数 另一个页面接受参数 然后渲染到页面上
 // 思路二:跳转到另一个页面在onmouted里再调用geRepo（）先写死 后面在想办法 然后再把返回的数据再次渲染到页面
 
     if (res.status === 201) {
       ElMessage.success("创建仓库成功");
       console.log(res.data.project, res.data.name, res.data.description,res.data.updated_at);
-      console.log(res)
+      console.log(res.data.forks_count)
       // 创建完成后 清空表单信息
       form.value = {...form};
+       // 将仓库数据存储到 localStorage
+      localStorage.setItem("repoData", JSON.stringify(res.data));
+
        localStorage.setItem('repoData', JSON.stringify(res.data));
       router.push({
         path: "/code",
         query: {
-          // project: res.data.project,
+          // forks:res.data.forks_count,
+          // avatar:res.data.avatar_url,
+          project: res.data.project,
           name: res.data.name,
           description: res.data.description,
           data: res.data.updated_at,
