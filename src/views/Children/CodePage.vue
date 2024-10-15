@@ -80,7 +80,7 @@
                 <!-- 仓库名称列 -->
                 <el-table-column label="仓库名称">
                   <template #default="scope">
-                    <div class="w-[35%] flex justify-between items-center">
+                    <div class="w-[45%] flex justify-between items-center">
                       <div><el-avatar>{{ scope.row.avatar }}</el-avatar></div>
                       <div>
                         <span style="margin-left: 10px">{{ scope.row.name }}</span>
@@ -190,6 +190,8 @@ import { useRouter } from "vue-router";
 const router = useRouter();
 const activeName = ref("first");
 const input2 = ref('')
+const total = ref(1)
+const pageSize = ref(10)
 const repoData = ref({
   owner:"yu-youshu",
   // repo:"xza_cdj",//仓库路径
@@ -202,13 +204,15 @@ const repoName = ref("");
 const repoDescription = ref("");
 const repoPath = ref("");
 const updatedDate = ref("");
-const tableData = ref([
-  // {  }
-])
-// 用户创建完成仓库 点击删除图标就可以删除用户刚刚创建好的仓库 因为用户输入的仓库路径是不一样的 我想每次都要手动改动repoData.value.repo太麻烦了 请你帮我实现 在不需要我手动改动repoData.value.repo的情况下删除用户刚刚创建好的仓库
+const tableData = ref([])
+// 用户创建完成仓库 点击删除图标就可以删除用户刚刚创建好的仓库 
+// 因为用户输入的仓库路径是不一样的 我想每次都要手动改动repoData.value.repo太麻烦了 
+//  在不需要我手动改动repoData.value.repo的情况下删除用户刚刚创建好的仓库
 onMounted(() => {
   const storedData = localStorage.getItem('repoData');
+  // let repoData = storedData ? JSON.parse(storedData) : [];
   if (storedData) {
+    // const repoData = JSON.parse(storedData);
     const data = JSON.parse(storedData);
     repoName.value = data.name || "无";
     repoDescription.value = data.description || "无";
@@ -217,8 +221,7 @@ onMounted(() => {
     forks.value = data.forks_count || "无";
     repoPath.value = data.path || "无";
     // avatar.value = data.avatar_url || "无";
-  }
-  // 更新表格中的数据
+    // 更新表格中的数据
     tableData.value = [
       {
         path:repoPath.value || "无", // 仓库路径
@@ -229,7 +232,12 @@ onMounted(() => {
         updateTime: updatedDate.value,
       }
     ];
+  }else{
+     // 如果本地存储中没有仓库信息，则提示
+    ElMessage.info("暂无仓库数据，请先创建仓库");
+  }
 });
+
 // 计算并格式化更新时间
 const formattedUpdatedDate = computed(() => {
   if (!updatedDate.value || updatedDate.value === "无") {
@@ -254,16 +262,6 @@ const formattedUpdatedDate = computed(() => {
     return `${diffInMinutes}分钟前`; // 2到60分钟
   }
 });
-const total = ref(1)
-const pageSize = ref(10)
-const handlePageChange = (page) => {
-  console.log('当前页码：', page)
-}
-
-const handleEdit = (row) => {
-  console.log('编辑行：', row)
-}
-
 // 点击删除图标时 发请求 连gitee上对应的仓库也一并删除了
 const handleDelete = async (row) => {
   // 获取仓库信息
@@ -282,7 +280,9 @@ const handleDelete = async (row) => {
 
     // 判断删除仓库是否成功
     if (res.status === 204) {
-      ElMessage.success('仓库删除成功');
+      // 删除本地存储中的仓库信息
+      localStorage.removeItem('repoData');
+       ElMessage.success('仓库删除成功');
       // 删除表格中的行
       const index = tableData.value.indexOf(row);
       if (index !== -1) {
@@ -303,6 +303,15 @@ const handleDelete = async (row) => {
     ElMessage.error('删除仓库时发生错误');
   }
 };
+const handlePageChange = (page) => {
+  console.log('当前页码：', page)
+}
+
+const handleEdit = (row) => {
+  console.log('编辑行：', row)
+}
+
+
 const handleClick = (tab: TabsPaneContext, event: Event) => {
   console.log(tab, event);
 };

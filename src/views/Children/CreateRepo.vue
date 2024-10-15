@@ -5,7 +5,7 @@
     </div>
     <hr class="mt-[10px]" />
     <div v-if="loading" class="text-center text-blue-300 font-bold">
-       创建中，请稍候...
+      创建仓库中，请稍候...
     </div>
     <div class="flex items-center mb-4 w-[200px] h-[100%] mt-[2%] ml-[10px]">
       <div
@@ -160,7 +160,7 @@
             @click="getOnRepo"
             type="submit"
             class="w-150px bg-[#2B323D] text-white py-2 px-4 rounded-md"
-          >创建仓库
+            >创建仓库
             <!-- <span v-if="loading">创建中...</span>
             <span v-else>创建仓库</span> -->
           </button>
@@ -182,15 +182,15 @@
 import { ref } from "vue";
 import { Icon } from "@iconify/vue/dist/iconify.js";
 import "element-plus/es/components/message/style/css";
-import { ElMessage } from "element-plus";
+import { ElMessage,ElLoading  } from "element-plus";
 import { useRouter } from "vue-router";
 import { createRepo } from "../../api";
 const router = useRouter();
 const loading = ref(false);
 const form = ref({
-  readme:true,
-  gitignore:true,
-  branchModel:true,
+  readme: true,
+  gitignore: true,
+  branchModel: true,
   project: "",
   name: "",
   path: "",
@@ -198,7 +198,9 @@ const form = ref({
   // access_token: "0fe078827eb62914fd9d36a60f231a03",
 });
 const pathRegex = /^[a-zA-Z0-9][a-zA-Z0-9-_\.]{1,190}$/;
+
 const getOnRepo = async () => {
+
   if (
     !form.value.project ||
     !form.value.name ||
@@ -215,7 +217,7 @@ const getOnRepo = async () => {
     );
     return;
   }
-   // 显示“创建中”提示
+  // 显示“创建中”提示
   loading.value = true;
   // 提交表单时 发起请求
   // 创建仓库
@@ -236,22 +238,27 @@ const getOnRepo = async () => {
       private: true,
       auto_init: true,
       // access_token: import.meta.env.VITE_ACCESS_TOKEN,
-      access_token:localStorage.getItem("access_token"),
+      access_token: localStorage.getItem("access_token"),
       path: form.value.path,
     });
-// 思路一:跳转的时候携带参数 另一个页面接受参数 然后渲染到页面上
-// 思路二:跳转到另一个页面在onmouted里再调用geRepo（）先写死 后面在想办法 然后再把返回的数据再次渲染到页面
+    // 思路一:跳转的时候携带参数 另一个页面接受参数 然后渲染到页面上
+    // 思路二:跳转到另一个页面在onmouted里再调用geRepo（）先写死 后面在想办法 然后再把返回的数据再次渲染到页面
 
     if (res.status === 201) {
       ElMessage.success("创建仓库成功");
-      console.log(res.data.project, res.data.name, res.data.description,res.data.updated_at);
-      console.log(res.data.forks_count)
+      console.log(
+        res.data.project,
+        res.data.name,
+        res.data.description,
+        res.data.updated_at
+      );
+      console.log(res.data.forks_count);
       // 创建完成后 清空表单信息
-      form.value = {...form};
-       // 将仓库数据存储到 localStorage
+      form.value = { ...form };
+      // 将仓库数据存储到 localStorage
       localStorage.setItem("repoData", JSON.stringify(res.data));
 
-       localStorage.setItem('repoData', JSON.stringify(res.data));
+      localStorage.setItem("repoData", JSON.stringify(res.data));
       router.push({
         path: "/code",
         query: {
