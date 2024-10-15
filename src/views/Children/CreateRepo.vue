@@ -255,8 +255,25 @@ const getOnRepo = async () => {
       console.log(res.data.forks_count);
       // 创建完成后 清空表单信息
       form.value = { ...form };
+      // 1. 获取当前的仓库列表
+      let storedRepos = localStorage.getItem("repoList");
+      let repoList = storedRepos ? JSON.parse(storedRepos) : [];
+
+      // 2. 将新仓库添加到仓库列表中
+      repoList.push({
+        name: res.data.name,
+        description: res.data.description,
+        updated_at: res.data.updated_at,
+        project: res.data.project,
+        forks_count: res.data.forks_count,
+        path: res.data.path,
+      });
+
+      // 3. 将更新后的仓库列表存储到 localStorage
+      localStorage.setItem("repoList", JSON.stringify(repoList));
+
       // 将仓库数据存储到 localStorage
-      localStorage.setItem("repoData", JSON.stringify(res.data));
+      // localStorage.setItem("repoData", JSON.stringify(res.data));
 
       localStorage.setItem("repoData", JSON.stringify(res.data));
       router.push({

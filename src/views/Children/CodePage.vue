@@ -80,7 +80,7 @@
                 <!-- 仓库名称列 -->
                 <el-table-column label="仓库名称">
                   <template #default="scope">
-                    <div class="w-[45%] flex justify-between items-center">
+                    <div class="w-[40%] flex justify-between items-center">
                       <div><el-avatar>{{ scope.row.avatar }}</el-avatar></div>
                       <div>
                         <span style="margin-left: 10px">{{ scope.row.name }}</span>
@@ -205,14 +205,10 @@ const repoDescription = ref("");
 const repoPath = ref("");
 const updatedDate = ref("");
 const tableData = ref([])
-// 用户创建完成仓库 点击删除图标就可以删除用户刚刚创建好的仓库 
-// 因为用户输入的仓库路径是不一样的 我想每次都要手动改动repoData.value.repo太麻烦了 
-//  在不需要我手动改动repoData.value.repo的情况下删除用户刚刚创建好的仓库
+
 onMounted(() => {
   const storedData = localStorage.getItem('repoData');
-  // let repoData = storedData ? JSON.parse(storedData) : [];
   if (storedData) {
-    // const repoData = JSON.parse(storedData);
     const data = JSON.parse(storedData);
     repoName.value = data.name || "无";
     repoDescription.value = data.description || "无";
@@ -237,7 +233,7 @@ onMounted(() => {
     ElMessage.info("暂无仓库数据，请先创建仓库");
   }
 });
-
+// 添加新仓库到本地存储
 // 计算并格式化更新时间
 const formattedUpdatedDate = computed(() => {
   if (!updatedDate.value || updatedDate.value === "无") {
@@ -263,6 +259,9 @@ const formattedUpdatedDate = computed(() => {
   }
 });
 // 点击删除图标时 发请求 连gitee上对应的仓库也一并删除了
+// 用户创建完成仓库 点击删除图标就可以删除用户刚刚创建好的仓库 
+// 因为用户输入的仓库路径是不一样的 我想每次都要手动改动repoData.value.repo太麻烦了 
+//  在不需要我手动改动repoData.value.repo的情况下删除用户刚刚创建好的仓库
 const handleDelete = async (row) => {
   // 获取仓库信息
   const owner = repoData.value.owner;
