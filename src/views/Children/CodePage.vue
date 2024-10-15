@@ -185,36 +185,29 @@ import { Icon } from "@iconify/vue/dist/iconify.js";
 import { ArrowDown } from '@element-plus/icons-vue'
 import { Search } from '@element-plus/icons-vue'
 import type { TabsPaneContext } from "element-plus";
-import { deleteRepo,createRepo } from "../../api/index"
+import { deleteRepo } from "../../api/index"
 import { useRouter } from "vue-router";
 const router = useRouter();
 const activeName = ref("first");
 const input2 = ref('')
 const repoData = ref({
   owner:"yu-youshu",
-  repo:"my_name",
-  access_token:"b2bf89b4f6897c98114173d56b6a1004"
+  // repo:"xza_cdj",//仓库路径
+  access_token:"cd124e03898b2b21ab7849a764dbc59d"
 });
 // const avatar = ref("")
 const forks = ref("")
 const project = ref("");
 const repoName = ref("");
 const repoDescription = ref("");
+const repoPath = ref("");
 const updatedDate = ref("");
 const tableData = ref([
-  { name: 'repoName.value', description: 'repoDescription.value', project: 'data.project', merges: 0, updateTime: 'updatedDate.value' }
+  // {  }
 ])
-
+// 用户创建完成仓库 点击删除图标就可以删除用户刚刚创建好的仓库 因为用户输入的仓库路径是不一样的 我想每次都要手动改动repoData.value.repo太麻烦了 请你帮我实现 在不需要我手动改动repoData.value.repo的情况下删除用户刚刚创建好的仓库
 onMounted(() => {
   const storedData = localStorage.getItem('repoData');
-//   type tableData = {
-//   name: string;
-//   description: string;
-//   project: string;
-//   merges: number;
-//   updateTime: string;
-//   forks?: string; // 加入 `forks` 属性
-// };
   if (storedData) {
     const data = JSON.parse(storedData);
     repoName.value = data.name || "无";
@@ -222,11 +215,13 @@ onMounted(() => {
     updatedDate.value = data.updated_at || "无";
     project.value = data.project || "无";
     forks.value = data.forks_count || "无";
+    repoPath.value = data.path || "无";
     // avatar.value = data.avatar_url || "无";
   }
   // 更新表格中的数据
     tableData.value = [
       {
+        path:repoPath.value || "无", // 仓库路径
         name: repoName.value,
         description: repoDescription.value,
         project: project.value,
@@ -249,6 +244,9 @@ const formattedUpdatedDate = computed(() => {
     return "刚刚"; // 小于1分钟
   } else if (diffInMinutes === 1) {
     return "1分钟前"; // 1分钟
+  } else if (diffInMinutes > 1440) { // 一天有1440分钟
+    const daysAgo = Math.floor(diffInMinutes / 1440);
+    return `${daysAgo}天前`; // 超过一天
   } else if (diffInMinutes > 60) {
     const hoursAgo = Math.floor(diffInMinutes / 60);
     return `${hoursAgo}小时前`; // 超过60分钟
@@ -265,22 +263,24 @@ const handlePageChange = (page) => {
 const handleEdit = (row) => {
   console.log('编辑行：', row)
 }
-// 点击删除图标时 连gitee上对应的仓库也一并删除了
 
+// 点击删除图标时 发请求 连gitee上对应的仓库也一并删除了
 const handleDelete = async (row) => {
+  // 获取仓库信息
   const owner = repoData.value.owner;
-  const repo = repoData.value.repo;
+  const repo = row.path; // 从表格行中获取 repo
   const token = repoData.value.access_token;
 
-  // 打印检查参数
   console.log('Owner:', owner);
   console.log('Repo:', repo);
   console.log('Access Token:', token);
   console.log(`Request URL: https://gitee.com/api/v5/repos/${owner}/${repo}`);
 
   try {
+    // 发送删除仓库请求
     const res = await deleteRepo(owner, repo, token);
 
+    // 判断删除仓库是否成功
     if (res.status === 204) {
       ElMessage.success('仓库删除成功');
       // 删除表格中的行
@@ -289,10 +289,16 @@ const handleDelete = async (row) => {
         tableData.value.splice(index, 1);
         ElMessage.success('行删除成功');
       }
+      // 检查表格中是否还有仓库
+      if (tableData.value.length === 0) {
+        ElMessage.info('暂无数据');
+      }
     } else {
+      // 提示删除失败
       ElMessage.error('删除仓库失败，请检查权限或仓库是否存在');
     }
   } catch (err) {
+    // 打印错误信息
     console.error(err);
     ElMessage.error('删除仓库时发生错误');
   }
@@ -303,8 +309,6 @@ const handleClick = (tab: TabsPaneContext, event: Event) => {
 const onRepo = () => {
    router.push("/createrepo")
 }
-
-
 
 </script>
 <style scoped>

@@ -11,7 +11,6 @@ export const deleteRepo = (owner, repo, token) =>
       Authorization: `Bearer ${token}`, // 通过 Authorization 请求头传递 token
     },
   });
-  console.log(deleteRepo);
 // 刷新令牌
 export const refreshToken = (data) =>
   request.post(
